@@ -3,7 +3,7 @@ export const buildPrompt = ({
   classLevel,
   examType,
   revisionMode,
-  includeDiagram,
+  includeDiagrams,
   includeChart
 }) => {
   return `
@@ -26,7 +26,7 @@ Topic: ${topic}
 Class Level: ${classLevel || "Not specified"}
 Exam Type: ${examType || "General"}
 Revision Mode: ${revisionMode ? "ON" : "OFF"}
-Include Diagram: ${includeDiagram ? "YES" : "NO"}
+Include Diagrams: ${includeDiagrams ? "YES" : "NO"}
 Include Charts: ${includeChart ? "YES" : "NO"}
 
 GLOBAL CONTENT RULES:

@@ -7,6 +7,7 @@ import userRouter from './routes/user.route.js';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import notesRouter from './routes/generate.route.js';
+import pdfRouter from './routes/pdf.routes.js';
 dotenv.config();
 
 
@@ -26,6 +27,7 @@ dotenv.config();
  app.use("/api/auth" , authRouter);
  app.use("/api/user" , userRouter);
  app.use("/api/notes" , notesRouter);
+ app.use("/api/pdf" , pdfRouter);
 
  app.listen(PORT, () => {
      console.log(`Server is running on port ${PORT}`);

@@ -22,3 +22,19 @@ export const generateNotes = async (payload) => {
         console.log(error);
     }
 }
+
+export const downloadPdf = async (result) => {
+    try{
+        const response = await axios.post(serverURL + "/api/pdf/generate-pdf", { results :result }, { withCredentials: true, responseType: 'blob' });
+        const blob = new Blob([response.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'exam_notes_AI.pdf';
+        link.click();
+        
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        throw new Error("Failed to download PDF. Please try again.");
+    }
+}
