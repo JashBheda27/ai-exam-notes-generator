@@ -246,7 +246,7 @@ Start Express server using Nodemon.
 
 ---
 
-```
+---
 
 # 📸 Screenshots
 
@@ -281,7 +281,7 @@ Start Express server using Nodemon.
 
 
 
-```
+---
 
 
 ## Author
