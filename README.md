@@ -255,29 +255,27 @@ Start Express server using Nodemon.
 <img width="1776" height="861" alt="image" src="https://github.com/user-attachments/assets/34b12694-9cd7-4f1a-9235-3fea5de79f91" />
 
 
-###  Create Campaign Page
+###  Home Page
 
-<img width="961" height="615" alt="image" src="https://github.com/user-attachments/assets/1d19f6c7-0cd6-4b81-9dbf-228542fb5d05" />
+<img width="1902" height="897" alt="image" src="https://github.com/user-attachments/assets/38fe4ced-a9a8-4b5d-8761-dc464afdd2dd" />
 
-### Statistic Page
 
-<img width="957" height="749" alt="image" src="https://github.com/user-attachments/assets/aae1196f-97d1-4359-a742-34cdaeecc622" />
+### Create Notes Page
 
-### Campaign Finanace/Withdraw/Refund Page
+<img width="1917" height="903" alt="image" src="https://github.com/user-attachments/assets/e96dc3bb-bb72-448c-b521-8a0b9cc29c12" />
 
-<img width="972" height="618" alt="image" src="https://github.com/user-attachments/assets/a66a1c19-ecf8-4dba-8b6d-e57c5f8ff4aa" />
 
-### Profile Page
+### My Notes History Page
 
-<img width="951" height="631" alt="image" src="https://github.com/user-attachments/assets/ef4bb8c8-4a37-413e-8a49-d65b12ab029a" />
+<img width="1911" height="892" alt="image" src="https://github.com/user-attachments/assets/17b16d63-6aad-4af0-944a-5e5f5115338e" />
 
-### Campaign Details Page(Closed/Successfull)
 
-<img width="986" height="533" alt="image" src="https://github.com/user-attachments/assets/dcab2726-8347-49f3-bbcb-d3c1dff5a582" />
+### Credit Topup Page
 
-### Transaction History (Withdraw/Refund)
+<img width="1840" height="750" alt="image" src="https://github.com/user-attachments/assets/713c0ead-e0b6-4f48-b8a8-353c8634e3ac" />
 
-<img width="1015" height="563" alt="image" src="https://github.com/user-attachments/assets/5ddd0ab6-92ec-45be-a0a5-364d51f7e5b1" />
+
+
 
 
 
