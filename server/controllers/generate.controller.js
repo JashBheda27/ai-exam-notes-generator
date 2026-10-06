@@ -54,7 +54,7 @@ export const generateNotes = async (req, res) => {
 
        await user.save();
 
-       return res.status(200).json({ message: "Notes generated successfully", data : aiResponse,notesId: notes._id, remainingCredits: user.credits });
+       return res.status(200).json({ message: "Notes generated successfully", data : {...aiResponse , revisionMode} ,notesId: notes._id, remainingCredits: user.credits });
 
     } catch (error) {
       return res.status(500).json({ error: "AI Generation failed", message: error.message });

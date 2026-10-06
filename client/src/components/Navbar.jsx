@@ -32,7 +32,7 @@ function Navbar() {
 
             <div className="flex item-center gap-4">
                 <img src={logo} alt="logo" className="w-10 h-10 rounded-full object-cover" />
-                <span className='text-lg  text-purple-500 hidden md:block font-semibold'>ExamNotes <span className='text-green-500'>AI</span></span>
+                <span className='text-xl  text-purple-500 hidden md:block font-semibold'>ExamNotes <span className='text-green-500'>AI</span></span>
             </div>
 
             <div className='flex items-center gap-6 required'>

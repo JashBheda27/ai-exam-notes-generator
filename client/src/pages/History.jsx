@@ -6,36 +6,68 @@ import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { GiHamburgerMenu } from 'react-icons/gi';
 import FinalResult from '../components/FinalResult.jsx';
+import { ArrowLeft } from 'lucide-react';
 
 function History() {
   const [topics, setTopics] = useState([])
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const { userData } = useSelector((state) => state.user);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeNote, setActiveNote] = useState(null);
   const [selectedNote, setSelectedNote] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showTransactions, setShowTransactions] = useState(false);
+  const [transactions, setTransactions] = useState([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
   const credits = userData.credits;
 
   useEffect(() => {
-const myNotes = async () => {
-    try {
-      const res = await axios.get(serverURL +"/api/notes/getnotes" , { withCredentials: true });
-      console.log(res.data)
-      setTopics(Array.isArray(res.data) ? res.data : []);
-    } catch (error) {
-      console.error("Error fetching notes:", error);
+    const myNotes = async () => {
+      try {
+        const res = await axios.get(serverURL + "/api/notes/getnotes", { withCredentials: true });
+        console.log(res.data)
+        setTopics(Array.isArray(res.data) ? res.data : []);
+      } catch (error) {
+        console.error("Error fetching notes:", error);
+      }
     }
-  }
-  myNotes();
+    myNotes();
   }, [])
-  
+
+  const openTransactions = async () => {
+    setShowTransactions(true);
+    setTransactionsLoading(true);
+
+    try {
+      const res = await axios.get(
+        serverURL + "/api/credit/history",
+        { withCredentials: true }
+      );
+      setTransactions(Array.isArray(res.data) ? res.data : []);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+    } finally {
+      setTransactionsLoading(false);
+    }
+  };
+
   const openNote = async (noteId) => {
     setLoading(true);
     setActiveNote(noteId);
+
     try {
-      const res = await axios.get(serverURL + `/api/notes/${noteId}`, { withCredentials: true });
-      setSelectedNote(res.data?.content);
+      const res = await axios.get(
+        serverURL + `/api/notes/${noteId}`,
+        { withCredentials: true }
+      );
+
+      setSelectedNote({
+        ...res.data.content,
+        revisionMode: res.data.revisionMode,
+        includeDiagrams: res.data.includeDiagrams,
+        includeChart: res.data.includeChart
+      });
+
       setLoading(false);
     } catch (error) {
       console.error("Error fetching note:", error);
@@ -44,7 +76,7 @@ const myNotes = async () => {
   };
 
   useEffect(() => {
-    if(window.innerWidth >= 1024) {
+    if (window.innerWidth >= 1024) {
       setIsSidebarOpen(true);
     }
   }, [])
@@ -58,49 +90,70 @@ const myNotes = async () => {
         className='mb-10 rounded-2xl bg-black/80 backdrop-blur-lg border border-white/10 px-8 py-6 items-center flex justify-between md:items-center gap-4 flex-col md:flex-row shadow-[0_20px_40px_rgba(0,0,0,0.6)]'
       >
         <div className='cursor-pointer' onClick={() => navigate('/')}>
-                  <h1 className='text-2xl font-bold bg-linear-to-r from-white via-gray-300 to-white bg-clip-text text-transparent'>ExamNotesAI</h1>
-                  <p className='text-sm text-white/80 mt-4'>AI-powered study notes and exam preparation resources</p>
-                </div>
-        
-                <div className='flex items-center gap-6 flex-wrap'>
-              {!isSidebarOpen &&  <button className='lg:hidden text-white text-2xl cursor-pointer' onClick={() => setIsSidebarOpen(true)}>
-                    <GiHamburgerMenu />
-                  </button>}
-                  
-                  <button className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 border border-white/30 text-white text-sm" onClick={() => navigate('/pricing')}>
-                    <span className=' text-xl'>💎</span>
-                    <span>{credits}</span>
-                    <motion.span whileHover={{ scale: 1.2 }} whileTap={{ scale: 0.97 }}
-                      className='ml-2 h-5 w-5 rounded-full bg-white text-black text-xs flex items-center justify-center font-bold cursor-pointer'>
-                      ➕
-                    </motion.span>
-                  </button>
+          <h1 className='text-2xl font-bold bg-linear-to-r from-white via-gray-300 to-white bg-clip-text text-transparent'>ExamNotesAI</h1>
+          <p className='text-sm text-white/80 mt-4'>AI-powered study notes and exam preparation resources</p>
+        </div>
 
-                </div>
+        <div className='flex items-center gap-4 flex-wrap'>
+          {!isSidebarOpen && <button className='lg:hidden text-white text-2xl cursor-pointer' onClick={() => setIsSidebarOpen(true)}>
+            <GiHamburgerMenu />
+          </button>}
 
+          <button
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 border border-white/30 text-white text-sm"
+            onClick={() => navigate('/pricing')}
+          >
+            <span className='text-xl'>💎</span>
+            <span>{credits}</span>
+            <motion.span
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.97 }}
+              className='ml-2 h-5 w-5 rounded-full bg-white text-black text-xs flex items-center justify-center font-bold cursor-pointer'
+            >
+              ➕
+            </motion.span>
+          </button>
+
+          <button
+            onClick={openTransactions}
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 border border-white/30 text-white text-sm hover:bg-white/30 transition-all"
+          >
+            <span>💳</span>
+            <span className="hidden sm:inline">Transactions</span>
+          </button>
+        </div>
       </motion.header>
 
       <div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
         <AnimatePresence>
-          { isSidebarOpen  && 
-            <motion.div 
-              initial={{ x: -320}}
+          {isSidebarOpen &&
+            <motion.div
+              initial={{ x: -320 }}
               animate={{ x: 0 }}
-              exit={{ x: -320}}
+              exit={{ x: -320 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className='fixed lg:static top-0 left-0 z-50 lg:z-auto w-72 lg:w-auto h-full lg:h-[75vh] lg:col-span-1 bg-black/90 lg:bg-black/80 backdrop-blur-xl border border-white/20 shadow-[0_20px_40px_rgba(0,0,0,0.5)] p-5 overflow-y-auto lg:rounded-3xl'> 
-              <button onClick={() => setIsSidebarOpen(false)} className='lg:hidden text-white mb-4 cursor-pointer'>
-                ⬅️ back
-
+              className='lg:static relative top-0 left-0 z-50 lg:z-auto w-72 lg:w-auto h-full lg:h-[75vh] lg:col-span-1 bg-black/90 lg:bg-black/80 backdrop-blur-xl border border-white/20 shadow-[0_20px_40px_rgba(0,0,0,0.5)] p-5 overflow-y-auto lg:rounded-3xl'
+            >
+              <button
+                onClick={() => setIsSidebarOpen(false)}
+                className="group absolute top-4 left-4 md:top-8 md:left-8 z-20 flex items-center gap-2 px-3 py-2 rounded-xl bg-white/80 backdrop-blur-md border border-gray-200 text-gray-700 font-medium shadow-sm transition-all duration-300 hover:bg-white hover:text-black hover:shadow-md hover:-translate-x-1"
+              >
+                <ArrowLeft
+                  size={18}
+                  className="transition-transform duration-300 group-hover:-translate-x-1"
+                />
+                <span>Back</span>
               </button>
 
-              <div className='mb-4 space-y-1'>
-                <button onClick={() => navigate('/notes')} 
-                className='w-full px-3 py-2 rounded-lg text-sm text-gray-300 bg-white/10 hover:bg-white/20 cursor-pointer'>
+              <div className='mb-4 space-y-1 pt-16'>
+                <button
+                  onClick={() => navigate('/notes')}
+                  className='w-full px-3 py-2 rounded-lg text-sm text-gray-300 bg-white/10 hover:bg-white/20 cursor-pointer'
+                >
                   ➕ New Notes
                 </button>
 
-                <hr className='border-white/30 mb-4'/>
+                <hr className='border-white/30 mb-4' />
 
                 <h2 className='text-lg font-bold mb-4 bg-gradient-to-r from-white via-gray-300 to-white bg-clip-text text-transparent'>
                   📋Your Notes
@@ -111,14 +164,19 @@ const myNotes = async () => {
                 )}
 
                 <ul className='space-y-3'>
-                  {topics.map((t , i)=>(
-                    <li key={i} onClick={() => {
-                      openNote(t._id);
-                    }} className={`cursor-pointer p-3 rounded-xl transition-all
-                    ${activeNote === t._id
-                    ? "bg-indigo-600/30 border-indigo-400 shadow-[0_0_0_2px_rgba(99,102,241,0.7)]"
-                    : "bg-white/10 border-white/20 hover:bg-white/20"}`}>
-                      <p className='text-sm font-semibold text-white'>{t.topic}
+                  {topics.map((t, i) => (
+                    <li
+                      key={i}
+                      onClick={() => {
+                        openNote(t._id);
+                      }}
+                      className={`cursor-pointer p-3 rounded-xl transition-all
+                      ${activeNote === t._id
+                          ? "bg-indigo-600/30 border-indigo-400 shadow-[0_0_0_2px_rgba(99,102,241,0.7)]"
+                          : "bg-white/10 border-white/20 hover:bg-white/20"}`}
+                    >
+                      <p className='text-sm font-semibold text-white'>
+                        {t.topic}
                       </p>
 
                       <div className='mt-2 flex flex-wrap gap-2 text-xs'>
@@ -140,27 +198,105 @@ const myNotes = async () => {
           }
         </AnimatePresence>
 
-
-        <motion.div initial={{ opacity: 0, y: -15 }}
+        <motion.div
+          initial={{ opacity: 0, y: -15 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6}}  
-        className='lg:col-span-3 p-6 rounded-2xl bg-white min-h-[75vh] shadow-[0_20px_40px_rgba(0,0,0,0.5)]'>
+          transition={{ duration: 0.6 }}
+          className='lg:col-span-3 p-6 rounded-2xl bg-white min-h-[75vh] shadow-[0_20px_40px_rgba(0,0,0,0.5)]'
+        >
+          {loading && <p className='text-center text-gray-500'>Loading Notes...</p>}
 
-          {loading && <p className='text-center text-gray-500'>Loading Notes...
-          </p>}
           {!loading && !selectedNote && (
             <div className='h-full flex items-center justify-center text-gray-400'>
               Select a note from the left
-              </div>
+            </div>
           )}
 
           {!loading && selectedNote && <FinalResult results={selectedNote} />}
         </motion.div>
       </div>
-      
+
+      {showTransactions && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+          onClick={() => setShowTransactions(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg max-h-[80vh] overflow-hidden rounded-3xl bg-black/95 border border-white/20 shadow-[0_20px_60px_rgba(0,0,0,0.7)]"
+          >
+            <div className="flex items-center justify-between px-6 py-5 border-b border-white/10">
+              <div>
+                <h2 className="text-xl font-bold text-white">
+                  💳 Transaction History
+                </h2>
+                <p className="text-sm text-gray-400 mt-1">
+                  Your credit purchases
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowTransactions(false)}
+                className="h-9 w-9 rounded-full bg-white/10 text-gray-300 hover:bg-white/20 hover:text-white transition-all"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-5 overflow-y-auto max-h-[60vh]">
+              {transactionsLoading && (
+                <div className="py-10 text-center text-gray-400">
+                  Loading transactions...
+                </div>
+              )}
+
+              {!transactionsLoading && transactions.length === 0 && (
+                <div className="py-10 text-center text-gray-400">
+                  <div className="text-4xl mb-3">💳</div>
+                  <p>No transactions yet.</p>
+                </div>
+              )}
+
+              {!transactionsLoading && transactions.length > 0 && (
+                <div className="space-y-3">
+                  {transactions.map((transaction) => (
+                    <div
+                      key={transaction._id}
+                      className="p-4 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/15 transition-all"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-white font-semibold">
+                            💎 {transaction.credits} Credits
+                          </p>
+
+                          <p className="text-sm text-gray-400 mt-1">
+                            {new Date(transaction.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-white font-semibold">
+                            ₹{transaction.amount}
+                          </p>
+
+                          <span className="inline-block mt-1 px-2 py-1 rounded-full bg-green-500/20 text-green-300 text-xs capitalize">
+                            {transaction.status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
 
 export default History
-

@@ -1,74 +1,191 @@
-import PDFDocument from 'pdfkit';
-export const pdfDownload = async (req, res) => {
-        const {results} = req.body;
+import PDFDocument from "pdfkit";
 
-        if(!results) {
-            return res.status(400).json({error: "Results data is required to generate PDF"});
+const section = (doc, title) => {
+    doc.moveDown(0.8);
+
+    doc.font("Helvetica-Bold")
+        .fontSize(16)
+        .fillColor("#1e293b")
+        .text(title);
+
+    doc.moveDown(0.3);
+};
+
+const renderMarkdown = (doc, text = "") => {
+    text.split("\n").forEach((line) => {
+        line = line.trim();
+
+        if (!line) {
+            doc.moveDown(0.3);
+            return;
         }
 
-        const doc = new PDFDocument({margin: 50});
+        // Heading 3
+        if (line.startsWith("### ")) {
+            doc.moveDown(0.4)
+                .font("Helvetica-Bold")
+                .fontSize(13)
+                .text(line.replace("### ", ""));
+        }
 
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', 'attachment; filename=exam_notes_AI.pdf');
+        // Heading 2
+        else if (line.startsWith("## ")) {
+            doc.moveDown(0.5)
+                .font("Helvetica-Bold")
+                .fontSize(15)
+                .text(line.replace("## ", ""));
+        }
+
+        // Heading 1
+        else if (line.startsWith("# ")) {
+            doc.moveDown(0.5)
+                .font("Helvetica-Bold")
+                .fontSize(17)
+                .text(line.replace("# ", ""));
+        }
+
+        // Bullet points
+        else if (line.startsWith("- ") || line.startsWith("* ")) {
+            doc.font("Helvetica")
+                .fontSize(11)
+                .text(`• ${line.substring(2).replace(/\*\*/g, "")}`, {
+                    indent: 15
+                });
+        }
+
+        // Numbered list
+        else if (/^\d+\.\s/.test(line)) {
+            doc.font("Helvetica")
+                .fontSize(11)
+                .text(line.replace(/\*\*/g, ""), {
+                    indent: 15
+                });
+        }
+
+        // Normal text
+        else {
+            doc.font("Helvetica")
+                .fontSize(11)
+                .text(line.replace(/\*\*/g, ""));
+        }
+    });
+};
+
+export const pdfDownload = async (req, res) => {
+    try {
+        const { results } = req.body;
+
+        if (!results) {
+            return res.status(400).json({
+                message: "No notes data provided"
+            });
+        }
+
+        const doc = new PDFDocument({
+            size: "A4",
+            margin: 50
+        });
+
+        res.setHeader("Content-Type", "application/pdf");
+
+        res.setHeader(
+            "Content-Disposition",
+            "attachment; filename=exam_notes_AI.pdf"
+        );
+
         doc.pipe(res);
 
-        // Title
-        doc.fontSize(20).text('Exam Notes AI', {align: 'center'});
-        doc.moveDown();
-        doc.fontSize(14).text(`Importance: ${results.importance}`);
-        doc.moveDown();
+        // Main title
+        doc.font("Helvetica-Bold")
+            .fontSize(22)
+            .fillColor("#111827")
+            .text("Exam Notes AI", {
+                align: "center"
+            });
+
+        doc.moveDown(0.5);
+
+        // Importance
+        doc.font("Helvetica-Bold")
+            .fontSize(13)
+            .fillColor("#111827")
+            .text(`Importance: ${results.importance || "N/A"}`);
 
         // Sub Topics
-        doc.fontSize(16).text('Sub Topics:');
-        doc.moveDown(0.5);
-        Object.entries(results.subTopics).forEach(([star, topics]) => {
-            doc.moveDown(0.5);
-            doc.fontSize(14).text(`${star} Topics:`);   
-             
-            topics.forEach((t)=>{
-                doc.fontSize(12).text(`• ${t}`);
+        section(doc, "Sub Topics");
+
+        Object.entries(results.subTopics || {}).forEach(([star, topics]) => {
+
+            doc.font("Helvetica-Bold")
+                .fontSize(12)
+                .text(`${star} Topics`);
+
+            topics.forEach((topic) => {
+                doc.font("Helvetica")
+                    .fontSize(11)
+                    .text(`• ${topic}`, {
+                        indent: 15
+                    });
             });
+
+            doc.moveDown(0.3);
         });
 
-        doc.moveDown();
+        // Detailed Notes
+        section(doc, "Detailed Notes");
 
-        //Notes
-        doc.fontSize(16).text('Detailed Notes:');
-        doc.moveDown(0.5);
-        doc.fontSize(12).text(results.notes.replace(/[#*`]/g, '')); // Remove markdown characters for PDF
+        renderMarkdown(doc, results.notes);
 
-        doc.moveDown();
+        // Quick Revision Points
+        section(doc, "Quick Revision Points");
 
-        //Revision Points
-        doc.fontSize(16).text('Quick Revision Points:');
-        doc.moveDown(0.5);
-        results.revisionPoints.forEach((p)=>{
-            doc.fontSize(12).text(`• ${p}`);
+        (results.revisionPoints || []).forEach((point) => {
+            doc.font("Helvetica")
+                .fontSize(11)
+                .text(`• ${point}`, {
+                    indent: 15
+                });
         });
 
-        doc.moveDown();
+        // Important Questions
+        section(doc, "Important Questions");
 
-        //Questions
-        doc.fontSize(16).text('Important Questions:');
-        doc.moveDown(0.5);
+        doc.font("Helvetica-Bold")
+            .fontSize(12)
+            .text("Short Questions");
 
-        doc.fontSize(13).text('Short Questions:');
-        results.questions.short.forEach((q)=>{
-            doc.fontSize(12).text(`• ${q}`);
+        (results.questions?.short || []).forEach((question) => {
+            doc.font("Helvetica")
+                .fontSize(11)
+                .text(`• ${question}`, {
+                    indent: 15
+                });
         });
 
-        doc.moveDown(0.5);
-        doc.fontSize(13).text('Long Questions:');
-        results.questions.long.forEach((q)=>{
-            doc.fontSize(12).text(`• ${q}`);
-        });
+        doc.moveDown(0.4);
 
-        doc.moveDown(0.5);
-        doc.fontSize(13).text('Diagrams:');
-        doc.fontSize(12).text(results.questions.diagrams);
+        doc.font("Helvetica-Bold")
+            .fontSize(12)
+            .text("Long Questions");
+
+        (results.questions?.long || []).forEach((question) => {
+            doc.font("Helvetica")
+                .fontSize(11)
+                .text(`• ${question}`, {
+                    indent: 15
+                });
+        });
 
         doc.end();
-        
 
+    } catch (error) {
+        console.error("PDF generation error:", error);
 
-}
+        if (!res.headersSent) {
+            return res.status(500).json({
+                message: "PDF generation failed",
+                error: error.message
+            });
+        }
+    }
+};

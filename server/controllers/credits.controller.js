@@ -1,6 +1,8 @@
 import Stripe from 'stripe';
 import UserModel from '../models/user.model.js';
+import PaymentModel from '../models/payment.model.js';
 import dotenv from 'dotenv';
+
 dotenv.config();
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -13,7 +15,7 @@ const CREDIT_MAP = {
 
 export const createCreditsOrder = async (req, res) => {
     try {
-        const userId = req.userId
+        const userId = req.userId;
         const { amount } = req.body;
 
         if (!CREDIT_MAP[amount]) {
@@ -45,37 +47,126 @@ export const createCreditsOrder = async (req, res) => {
 
         res.status(200).json({ url: session.url });
     } catch (error) {
+        console.error('Stripe order error:', error);
         res.status(500).json({ message: 'Stripe error' });
     }
-}
+};
 
 export const StripeWebhook = async (req, res) => {
     const sig = req.headers['stripe-signature'];
+
     let event;
-    try{
-        event  = stripe.webhooks.constructEvent(
+
+    try {
+        event = stripe.webhooks.constructEvent(
             req.body,
             sig,
             process.env.STRIPE_WEBHOOK_SECRET
         );
     } catch (error) {
-        res.status(500).json({ message: 'Stripe webhook error' });
+        console.error('Webhook signature error:', error.message);
+        return res.status(400).json({
+            message: 'Stripe webhook error'
+        });
     }
 
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        const userId = session.metadata.userId;
-        const creditsToAdd = Number(session.metadata.credits);
+    try {
+        if (event.type === 'checkout.session.completed') {
+            const session = event.data.object;
 
-        if (!userId || !creditsToAdd) {
-            return res.status(400).json({ message: 'Invalid webhook data' });
+            const userId = session.metadata?.userId;
+            const creditsToAdd = Number(session.metadata?.credits);
+
+            if (!userId || !creditsToAdd) {
+                return res.status(400).json({
+                    message: 'Invalid webhook data'
+                });
+            }
+
+            // Verify that Stripe has actually marked the payment as paid
+            if (session.payment_status !== 'paid') {
+                console.log(
+                    `Payment not completed for session: ${session.id}`
+                );
+
+                return res.json({
+                    received: true,
+                    message: 'Payment not completed'
+                });
+            }
+
+            // Check if this Stripe event was already processed
+            const existingPayment = await PaymentModel.findOne({
+                stripeEventId: event.id
+            });
+
+            if (existingPayment) {
+                console.log(`Duplicate webhook ignored: ${event.id}`);
+
+                return res.json({
+                    received: true,
+                    message: 'Event already processed'
+                });
+            }
+
+            // Create payment record
+            await PaymentModel.create({
+                userId,
+                stripeEventId: event.id,
+                stripeSessionId: session.id,
+                paymentIntentId: session.payment_intent,
+                amount: session.amount_total / 100,
+                currency: session.currency,
+                credits: creditsToAdd,
+                status: 'paid'
+            });
+
+            // Add credits only after payment has been verified
+            const user = await UserModel.findByIdAndUpdate(
+                userId,
+                {
+                    $inc: { credits: creditsToAdd },
+                    $set: { iscreditAvailable: true }
+                },
+                { new: true }
+            );
+
+            if (!user) {
+                console.error(`User not found: ${userId}`);
+                return res.status(404).json({
+                    message: 'User not found'
+                });
+            }
+
+            console.log(
+                `Added ${creditsToAdd} credits to user ${userId}`
+            );
         }
 
-        const user = await UserModel.findByIdAndUpdate(userId, { 
-            $inc: { credits: creditsToAdd },
-            $set: { iscreditAvailable: true }
-        }, { new: true });
+        return res.json({ received: true });
 
+    } catch (error) {
+        console.error('Webhook processing error:', error);
+
+        return res.status(500).json({
+            message: 'Webhook processing failed'
+        });
     }
-    res.json({ received: true });
-}
+};
+
+export const getPurchaseHistory = async (req, res) => {
+    try {
+        const userId = req.userId;
+
+        const payments = await PaymentModel.find({ userId })
+            .sort({ createdAt: -1 });
+
+        res.status(200).json(payments);
+    } catch (error) {
+        console.error('Purchase history error:', error);
+
+        res.status(500).json({
+            message: 'Failed to fetch purchase history'
+        });
+    }
+};

@@ -149,7 +149,7 @@ function Toggle({ label, checked, onChange }) {
                 transition={{ duration: 0.25 }}
                 className='relative w-12 h-6 rounded-full border border-white/20 backdrop-blur-lg'>
                 <motion.div layout transition={{ type: "spring", stiffness: 700, damping: 30 }}
-                    className='absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-[0_5px_10px_rgba(0,0,0,0.5)]'
+                    className='absolute top-0.5 h-4.5 w-4.5 rounded-full bg-white shadow-[0_5px_10px_rgba(0,0,0,0.5)]'
                     style={{ left: checked ? "1.6rem" : "0.25rem" }}>
 
                 </motion.div>

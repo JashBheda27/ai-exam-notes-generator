@@ -37,8 +37,8 @@ function FinalResult({ results }) {
     !results.subTopics ||
     !results.questions ||
     !results.questions.short ||
-    !results.questions.long ||
-    !results.revisionPoints) {
+    !results.questions.long 
+) {
     return null;
   }
 
@@ -51,14 +51,22 @@ function FinalResult({ results }) {
         </h2>
 
         <div className='flex  gap-4'>
-          <button onClick={() => setQuickRevision(!quickRevision)} className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition ${quickRevision
-            ? "bg-green-600 text-white"
-            : "bg-green-100 text-green-800 hover:bg-green-200"}`}>
-            {quickRevision ? "Exit Revision Mode" : "Quick Revision Mode(5 mins)"}
-          </button>
+          {results.revisionMode && (
+            <button
+              onClick={() => setQuickRevision(!quickRevision)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition ${quickRevision
+                  ? "bg-green-600 text-white"
+                  : "bg-green-100 text-green-800 hover:bg-green-200"
+                }`}
+            >
+              {quickRevision
+                ? "Exit Revision Mode"
+                : "Quick Revision Mode (5 mins)"}
+            </button>
+          )}
 
           <button onClick={() => downloadPdf(results)}
-          className='px-4 py-2 rounded-lg text-sm cursor-pointer font-medium bg-indigo-600 text-white hover:bg-indigo-700'>
+            className='px-4 py-2 rounded-lg text-sm cursor-pointer font-medium bg-indigo-600 text-white hover:bg-indigo-700'>
             ⬇️ Download PDF
           </button>
         </div>
@@ -85,8 +93,8 @@ function FinalResult({ results }) {
       </section>}
 
 
-     {!quickRevision &&  <section>
-      <SectionHeader icon="📝" title="Detailed Notes" color="purple" />
+      {!quickRevision && <section>
+        <SectionHeader icon="📝" title="Detailed Notes" color="purple" />
         <div className='bg-white border border-gray-200 rounded-xl p-6'>
           <ReactMarkdown components={markDownComponent}>
             {results.notes}
@@ -95,19 +103,21 @@ function FinalResult({ results }) {
       </section>}
 
 
-      {quickRevision && 
-      <section className='rounded-xl bg-gradient-to-r from-green-100 to-green-50 p-6 border border-green-200'>
-        <h3 className='font-bold text-green-700 mb-3 text-lg'>
-          ⚡ Quick Revision Points
+      {results.revisionMode && quickRevision && (
+    <section className="rounded-xl bg-gradient-to-r from-green-100 to-green-50 p-6 border border-green-200">
+        <h3 className="font-bold text-green-700 mb-3 text-lg">
+            ⚡ Quick Revision Points
         </h3>
-        <ul className='list-disc ml-6 text-gray-700 space-y-2'>
-          {results.revisionPoints.map((p, i) => (
-            <li key={i}>{p}</li>
-          ))}
-        </ul>
-      </section>}
 
-      {results.diagram && 
+        <ul className="list-disc ml-6 text-gray-700 space-y-2">
+            {results.revisionPoints.map((p, i) => (
+                <li key={i}>{p}</li>
+            ))}
+        </ul>
+    </section>
+)}
+
+      {results.diagram &&
         <section>
           <SectionHeader icon="📊" title="Diagram" color="cyan" />
           <MermaidSetup diagram={results.diagram?.data} />
@@ -117,7 +127,7 @@ function FinalResult({ results }) {
         </section>
       }
 
-      { results.charts?.length > 0 && 
+      {results.charts?.length > 0 &&
         <section>
           <SectionHeader icon="📈" title="Charts" color="indigo" />
           <RechartSetup charts={results.charts} />
@@ -126,34 +136,34 @@ function FinalResult({ results }) {
           </p>
         </section>}
 
-        {results.charts && results.charts.length === 0 && (
-          <p className='text-sm text-gray-500 mt-2 italic'>
-            📉 Charts are not relevant for this topic
-          </p>
-        )}
+      {results.charts && results.charts.length === 0 && (
+        <p className='text-sm text-gray-500 mt-2 italic'>
+          📉 Charts are not relevant for this topic
+        </p>
+      )}
 
-          <section>
-            <SectionHeader icon="❓" title="Important Questions" color="rose"/>
+      <section>
+        <SectionHeader icon="❓" title="Important Questions" color="rose" />
 
-              <p  className='font-medium'> Short Questions</p>
-              <ul className='list-disc ml-6 text-gray-700'>
-                {results.questions.short.map((q, i) => (
-                  <li key={i}>{q}</li>
-                ))}
-              </ul>
+        <p className='font-medium'> Short Questions</p>
+        <ul className='list-disc ml-6 text-gray-700'>
+          {results.questions.short.map((q, i) => (
+            <li key={i}>{q}</li>
+          ))}
+        </ul>
 
-              <p  className='font-medium mt-4 '> Long Questions</p>
-              <ul className='list-disc ml-6 text-gray-700'>
-                {results.questions.long.map((q, i) => (
-                  <li key={i}>{q}</li>
-                ))}
-              </ul>
+        <p className='font-medium mt-4 '> Long Questions</p>
+        <ul className='list-disc ml-6 text-gray-700'>
+          {results.questions.long.map((q, i) => (
+            <li key={i}>{q}</li>
+          ))}
+        </ul>
 
-              <p  className='font-medium mt-4'> Diagram Questions</p>
-              <ul className='list-disc ml-6 text-gray-700'>
-                <li>{results.questions.diagram}</li>
-              </ul>
-            </section>
+        <p className='font-medium mt-4'> Diagram Questions</p>
+        <ul className='list-disc ml-6 text-gray-700'>
+          <li>{results.questions.diagram}</li>
+        </ul>
+      </section>
 
 
     </div>
@@ -169,7 +179,7 @@ function SectionHeader({ title, icon, color }) {
     cyan: "from-cyan-100 to-cyan-50 text-cyan-700",
     rose: "from-rose-100 to-rose-50 text-rose-700",
   };
-  return(
+  return (
     <div className={`mb-4 px-3 py-2 rounded-lg bg-gradient-to-r ${colors[color]} font-semibold flex items-center gap-2`}>
       <span>{icon}</span>
       <span>{title}</span>
