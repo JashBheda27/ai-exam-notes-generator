@@ -13,7 +13,8 @@ import { StripeWebhook } from './controllers/credits.controller.js';
 dotenv.config();
 
 
- const PORT = process.env.PORT;
+
+ const PORT = process.env.PORT || 5000;
  const app = express();
 
 app.post(
@@ -23,7 +24,7 @@ app.post(
 );
 
  app.use(cors(
-    {origin: "http://localhost:5173",
+    {origin: process.env.CLIENT_URL,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE" , "OPTIONS"],
  }));
