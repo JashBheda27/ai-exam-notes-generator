@@ -9,7 +9,7 @@ import {getCurrentUser} from './services/api.js';
 import { useDispatch, useSelector } from 'react-redux';
 import PaymentSuccess from './pages/PaymentSuccess.jsx'
 import PaymentFailed from './pages/PaymentFailed.jsx'
-export const serverURL = "http://localhost:8000";
+export const serverURL = "https://ai-exam-notes-backend-0rlt.onrender.com";
 
 function App () {
   const dispatch = useDispatch();
