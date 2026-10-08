@@ -1,4 +1,5 @@
 import React , {useEffect} from 'react'
+import "./services/axiosconfig";
 import { Route, Routes , Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import Auth from './pages/Auth'

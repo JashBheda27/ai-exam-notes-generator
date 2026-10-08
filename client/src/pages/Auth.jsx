@@ -16,8 +16,9 @@ const dispatch = useDispatch();
             const User = response.user;
             const name = User.displayName;
             const email = User.email;
-            const result = await axios.post(serverURL + "/api/auth/google", { name, email }, {withCredentials: true });
-
+            const result = await axios.post(serverURL + "/api/auth/google", { name, email },  {withCredentials: true });
+            
+            localStorage.setItem("token", result.data.token);
             dispatch(setUserData(result.data.user));
         } catch (error) {
             console.log(error);
