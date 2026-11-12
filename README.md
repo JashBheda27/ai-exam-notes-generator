@@ -4,6 +4,13 @@ AI Exam Notes Generator is a full-stack web application that transforms any topi
 
 ---
 
+## 🚀 Live Demo
+
+Check out the live application here:
+
+[🌐 Visit Live Website](https://examnotes-ai.vercel.app/) 
+--- 
+
 ## Features
 
 * AI-powered topic-to-notes generation using Gemini
